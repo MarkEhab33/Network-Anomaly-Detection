@@ -10,8 +10,9 @@ import DataReader
 
 
 class SpectralClustering:
-    def fit(self, data):
+    def fit(self, data, labels):
         self.data = data
+        self.labels = labels
         return self
 
     def getAffinityRBF(self, gamma):
@@ -83,7 +84,7 @@ class SpectralClustering:
         sortedVectors = vectors[:, sortedindicies]
         return sortedValues, sortedVectors
 
-    def dummy_Kmeans(self, k):
+    def aux_kmeans(self, k):
         kmeans = KMeans(n_clusters=k)
         kmeans.fit(self.Y)
         labels = kmeans.labels_
@@ -92,15 +93,18 @@ class SpectralClustering:
 
     def cluster(self, k):
         self.k_way_normalized_cut(k)
-        print(self.dummy_Kmeans(k))
+        predict = self.aux_kmeans(k)
+        print(predict)
+        print(self.labels)
 
 
 if __name__ == '__main__':
-    testPath = "corrected.gz\corrected"
+    testPath = "corrected"
     trainPath = "kddcup.data.gz\kddcup.data.corrected"
 
     r = DataReader.Reader(trainPath, testPath)
     data, labels, test, testlabels = r.readData()
-    X_train, X_test, y_train, y_test = train_test_split(data, labels, test_size=0.005, random_state=42)
+    X_train, X_labels, y_train, y_test = train_test_split(data, labels, train_size=0.005, random_state=42)
     spc = SpectralClustering()
-    spc.fit(X_train).affinity('rbf', 1).cluster()
+    print(X_train.shape)
+    spc.fit(X_train, y_train).affinity('rbf', 1).cluster(k=23)
