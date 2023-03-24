@@ -15,6 +15,7 @@ class Reader:
             if df[col].dtype == 'object':  # check if column contains categorical data
                 df[col] = pd.factorize(df[col])[0]  # convert categorical data to numerical data
 
+
         return df
 
     def readData(self):
