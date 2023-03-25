@@ -6,6 +6,8 @@ from sklearn.model_selection import train_test_split
 # from mpl_toolkits.mplot3d import Axes3D
 # from sklearn.neighbors import NearestNeighbors
 from sklearn.cluster import KMeans
+
+import ClusterEvaluation
 import DataReader
 
 
@@ -51,6 +53,8 @@ class SpectralClustering:
     def recalcEigns(self):
         Delta = self.calculate_delta(self.A)
         Delta_inv = np.linalg.inv(Delta)
+        print("A")
+        print(self.A.shape)
         B = np.identity(self.A.shape[0]) - Delta_inv @ self.A
         vl, vc = np.linalg.eig(B)
         eig_vals, eig_vecs = self.sortEign(vl, vc)
@@ -59,11 +63,12 @@ class SpectralClustering:
 
     def k_way_normalized_cut(self, k):
         eig_vals, eig_vecs = self.getEigenValsAndVecs()
-        U = eig_vecs[:, :k - 1]
+        U = eig_vecs[:, :k]
         self.Y = np.zeros(U.shape)
+        epsilon = 1e-7
         for i in range(U.shape[0]):
             row = U[i]
-            norm = np.linalg.norm(row)
+            norm = np.linalg.norm(row) + epsilon
             self.Y[i] = (1 / norm) * row
 
     def calculate_delta(self, A):
@@ -75,7 +80,7 @@ class SpectralClustering:
             Delta[i, i] = sum
         return Delta
 
-    def sortEign(self, values, vectors, ascending):
+    def sortEign(self, values, vectors, ascending=True):
         direction = 1  # default ascending
         if ascending == False:
             direction = -1
@@ -86,6 +91,9 @@ class SpectralClustering:
 
     def aux_kmeans(self, k):
         kmeans = KMeans(n_clusters=k)
+        print("Y")
+        print(self.Y.shape)
+        print(self.Y)
         kmeans.fit(self.Y)
         labels = kmeans.labels_
 
@@ -96,6 +104,19 @@ class SpectralClustering:
         predict = self.aux_kmeans(k)
         print(predict)
         print(self.labels)
+        ce = ClusterEvaluation.ClusterEvaluator()
+        print("prec")
+        val1, arr1 = ce.getPrecision(self.labels,predict)
+        print(val1)
+        print(arr1)
+
+        print("rec")
+        val1, arr1 = ce.getRecall(self.labels,predict)
+        print(val1)
+        print(arr1)
+
+        val1 = ce.getF1Score(self.labels, predict)
+        print(val1)
 
 
 if __name__ == '__main__':
@@ -104,7 +125,7 @@ if __name__ == '__main__':
 
     r = DataReader.Reader(trainPath, testPath)
     data, labels, test, testlabels = r.readData()
-    X_train, X_labels, y_train, y_test = train_test_split(data, labels, train_size=0.005, random_state=42)
+    X_train, X_labels, y_train, y_test = train_test_split(data, labels, train_size=0.0025, random_state=42)
     spc = SpectralClustering()
     print(X_train.shape)
     spc.fit(X_train, y_train).affinity('rbf', 1).cluster(k=23)
