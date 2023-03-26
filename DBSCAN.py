@@ -61,18 +61,18 @@ if __name__ == '__main__':
     trainPath = "kddcup.data_10_percent_corrected"
     r = DataReader.Reader(trainPath,testPath)
     data, labels, test, testlabels = r.readData()
-   # X_train, X_labels, y_train, y_test = train_test_split(data, labels, train_size=0.0025, random_state=42)
-    print(data.shape)
+    X_train, X_labels, y_train, y_test = train_test_split(data, labels, train_size=0.0015, random_state=42)
+    print("data size ", X_train.shape)
+    print("Number of clusters from data = ",np.unique(X_train[:,-1]))
+    eps = 500
     dbscan = DBSCAN_implementation()
-    dbscan.setParameters(500,82)
-    labelsClustering = dbscan.dbscan(data)
+    dbscan.setParameters(eps,82)
+    labelsClustering = dbscan.dbscan(X_train)
     dic = dbscan.count_elements(labelsClustering)
     print(dic)
 
-
-    # print(X_train.shape)
-    # dbscan.write_labels_to_file(labelsClustering,"labelsfromdbscan.txt")
-    # print("done writing")
+    dbscan.write_labels_to_file(labelsClustering,"clusteringOutput.txt")
+    print("done writing")
 
 
 
