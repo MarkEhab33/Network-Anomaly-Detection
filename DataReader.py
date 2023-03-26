@@ -23,7 +23,7 @@ class Reader:
         df_Testing_numerical = self.convert_categorical_to_numerical(df_Testing)
         trainingData = df_Training_numerical.to_numpy()
         testingData = df_Testing_numerical.to_numpy()
-        print(trainingData.shape)
+       # print(trainingData.shape)
         #return training data , training labels , testing data, testing labels
         return trainingData[:, :-1],trainingData[:,-1], testingData[:, :-1],testingData[:,-1]
 
