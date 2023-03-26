@@ -1,14 +1,18 @@
 import numpy as np
-import matplotlib.pyplot as plt
+import time
 import DataReader
 from sklearn.model_selection import train_test_split
+from sklearn.cluster import KMeans
+from scipy.spatial.distance import cdist
+import ClusterEvaluation
 
 
 class hierarchicalClustering:
 
     # calculate the Euclidean distance between two points
     def euclidean_distance(self,x, y):
-        return np.sqrt(np.sum((x - y) ** 2))
+        distance = cdist([x], [y], metric='euclidean')
+        return distance[0][0]
 
 
     # calculate the distance matrix between all pairs of data points
@@ -54,7 +58,9 @@ class hierarchicalClustering:
             D[j, :] = np.inf
             D[:, j] = np.inf
 
-        return cluster_assignments, cluster_distances
+        unique_vals, idx = np.unique(cluster_assignments, return_inverse=True)
+        new_arr = idx.reshape(cluster_assignments.shape)
+        return new_arr, cluster_distances
 
     def write_labels_to_file(self,labels, filename):
         with open(filename, 'w') as f:
@@ -64,17 +70,22 @@ class hierarchicalClustering:
 
 if __name__ == '__main__':
     testPath = "corrected"
-    trainPath = "kddcup.data_10_percent_corrected"
+    trainPath = "kddcup.data.gz\kddcup.data.corrected"
     r = DataReader.Reader(trainPath, testPath)
     data, labels, test, testlabels = r.readData()
-    X_train, X_labels, y_train, y_test = train_test_split(data, labels, train_size=0.005, random_state=42)
-    print("data size ", X_train.shape)
+    X_train, X_labels, y_train, y_test = train_test_split(data, labels, train_size=0.0015, random_state=42)
+    print(X_train.shape)
+    clusteringTechnique = hierarchicalClustering()
+    start = time.time()
+    clusterLabels, cluster_distances = clusteringTechnique.hierarchical_clustering(X_train, n_clusters=7)
+    end = time.time()
+    print("     Training Time = ", (end - start) / 60, " mins")
 
-    hier = hierarchicalClustering()
 
-    cluster_assignments, cluster_distances = hier.hierarchical_clustering(X_train, n_clusters=7)
 
-    print(np.unique(cluster_assignments))
-    hier.write_labels_to_file(cluster_assignments, "clusteringOutput.txt")
-    print("done writing")
+    evaluater = ClusterEvaluation.ClusterEvaluator()
+    targetLabels = X_train[:, -1]
+    print( evaluater.getF1Score(targetLabels,clusterLabels))
+
+
 
