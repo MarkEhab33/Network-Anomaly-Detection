@@ -1,21 +1,18 @@
 import numpy as np
-import time
-import DataReader
 from sklearn.model_selection import train_test_split
 from sklearn.cluster import KMeans
 from scipy.spatial.distance import cdist
+import time
 import ClusterEvaluation
+import DataReader
 
 
 class hierarchicalClustering:
 
-    # calculate the Euclidean distance between two points
     def euclidean_distance(self,x, y):
         distance = cdist([x], [y], metric='euclidean')
         return distance[0][0]
 
-
-    # calculate the distance matrix between all pairs of data points
     def distance_matrix(self,X):
         n = X.shape[0]
         D = np.zeros((n, n))
@@ -25,29 +22,19 @@ class hierarchicalClustering:
                 D[j, i] = D[i, j]
         return D
 
-
     def hierarchical_clustering(self,X, n_clusters):
-       # print("Calculate D")
         D = self.distance_matrix(X)             # calculate the distance matrix
-       # print("done with D")
-
         cluster_assignments = np.arange(X.shape[0])
         cluster_distances = np.zeros(X.shape[0])
 
-        # merge clusters until the desired number of clusters is reached
-
-        for k in range(X.shape[0] - n_clusters):
+        for k in range(X.shape[0] - n_clusters):                    # merge clusters until the desired number of clusters is reached
             i, j = np.unravel_index(np.argmin(D), D.shape)          # closest different pairs
             while i == j:
                 D[i, j] = np.inf
                 i, j = np.unravel_index(np.argmin(D), D.shape)
 
-            #print(i, j, "is nearst clusters")
-
-
             cluster_assignments[cluster_assignments == j] = i
             cluster_distances[i] = D[i, j] / 2
-
 
             for l in range(X.shape[0]):         # update the distance matrix
                 if l != i and l != j:
@@ -78,8 +65,8 @@ if __name__ == '__main__':
 
     clusteringTechnique = hierarchicalClustering()
     evaluator = ClusterEvaluation.ClusterEvaluator()
-    clusters = [3,7,11]
 
+    clusters = [3,7,11]
     for k in clusters :
         print(" Number of clusters = ",k)
         start = time.time()
@@ -87,10 +74,19 @@ if __name__ == '__main__':
         end = time.time()
         print("     Training Time = ", (end - start) / 60, " mins")
         print("     Evaluation Results :")
-        print("         Precision result ", evaluator.getPrecision(targetLabels, clusterLabels)[0])
-        print("         Recall result ", evaluator.getRecall(targetLabels, clusterLabels)[0])
-        print("         F1 score result ",evaluator.getF1Score(targetLabels,clusterLabels))
-        print("         Precision result ", evaluator.getConditionalEntropy(targetLabels, clusterLabels))
+        print("         Precision total result ", evaluator.getPrecision(targetLabels, clusterLabels)[0])
+        print("             Precision for each cluster results: ", evaluator.getPrecision(targetLabels, clusterLabels)[1])
+        print("         -------------------------------------------------------------------------------------------------")
+        print("         Recall total result ", evaluator.getRecall(targetLabels, clusterLabels)[0])
+        print("             Recall for each cluster results: ", evaluator.getRecall(targetLabels, clusterLabels)[1])
+        print("         -------------------------------------------------------------------------------------------------")
+        print("         F1 score total result ",evaluator.getF1Score(targetLabels,clusterLabels)[0])
+        print("             F1 score for each cluster results ", evaluator.getF1Score(targetLabels, clusterLabels)[1])
+        print("         -------------------------------------------------------------------------------------------------")
+        print("         Condition Entropy total result ", evaluator.getConditionalEntropy(targetLabels, clusterLabels)[0])
+        print("             Condition Entropy result ", evaluator.getConditionalEntropy(targetLabels, clusterLabels)[1])
+        print("         -------------------------------------------------------------------------------------------------")
+        print("----------------------------------------------------------------------------------------------------------------------")
 
 
 
