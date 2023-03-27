@@ -125,7 +125,7 @@ if __name__ == '__main__':
 
     r = DataReader.Reader(trainPath, testPath)
     data, labels, test, testlabels = r.readData()
-    X_train, X_labels, y_train, y_test = train_test_split(data, labels, train_size=0.0025, random_state=42)
+    X_train, X_labels, y_train, y_test = train_test_split(data, labels, train_size=0.0015, random_state=42)
     spc = SpectralClustering()
     print(X_train.shape)
-    spc.fit(X_train, y_train).affinity('rbf', 1).cluster(k=23)
+    spc.fit(X_train, y_train).affinity('rbf', 0.1).cluster(k=11)
