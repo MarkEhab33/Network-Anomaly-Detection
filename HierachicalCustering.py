@@ -27,9 +27,9 @@ class hierarchicalClustering:
 
 
     def hierarchical_clustering(self,X, n_clusters):
-        print("Calculate D")
+       # print("Calculate D")
         D = self.distance_matrix(X)             # calculate the distance matrix
-        print("done with D")
+       # print("done with D")
 
         cluster_assignments = np.arange(X.shape[0])
         cluster_distances = np.zeros(X.shape[0])
@@ -42,7 +42,7 @@ class hierarchicalClustering:
                 D[i, j] = np.inf
                 i, j = np.unravel_index(np.argmin(D), D.shape)
 
-            print(i, j, "is nearst clusters")
+            #print(i, j, "is nearst clusters")
 
 
             cluster_assignments[cluster_assignments == j] = i
@@ -74,18 +74,23 @@ if __name__ == '__main__':
     r = DataReader.Reader(trainPath, testPath)
     data, labels, test, testlabels = r.readData()
     X_train, X_labels, y_train, y_test = train_test_split(data, labels, train_size=0.0015, random_state=42)
-    print(X_train.shape)
-    clusteringTechnique = hierarchicalClustering()
-    start = time.time()
-    clusterLabels, cluster_distances = clusteringTechnique.hierarchical_clustering(X_train, n_clusters=7)
-    end = time.time()
-    print("     Training Time = ", (end - start) / 60, " mins")
-
-
-
-    evaluater = ClusterEvaluation.ClusterEvaluator()
     targetLabels = X_train[:, -1]
-    print( evaluater.getF1Score(targetLabels,clusterLabels))
+
+    clusteringTechnique = hierarchicalClustering()
+    evaluator = ClusterEvaluation.ClusterEvaluator()
+    clusters = [3,7,11]
+
+    for k in clusters :
+        print(" Number of clusters = ",k)
+        start = time.time()
+        clusterLabels, cluster_distances = clusteringTechnique.hierarchical_clustering(X_train, n_clusters=k)
+        end = time.time()
+        print("     Training Time = ", (end - start) / 60, " mins")
+        print("     Evaluation Results :")
+        print("         Precision result ", evaluator.getPrecision(targetLabels, clusterLabels)[0])
+        print("         Recall result ", evaluator.getRecall(targetLabels, clusterLabels)[0])
+        print("         F1 score result ",evaluator.getF1Score(targetLabels,clusterLabels))
+        print("         Precision result ", evaluator.getConditionalEntropy(targetLabels, clusterLabels))
 
 
 
