@@ -35,7 +35,7 @@ class ClusterEvaluator:
             inside = np.count_nonzero(trueClasses == representative)
             all = np.count_nonzero(target == representative)
             recArr[clusterLabel] = inside / all
-            recTotal = recTotal + (countClust[clusterLabel] / totalsize) * recArr[clusterLabel]
+            recTotal = recTotal + (all / totalsize) * recArr[clusterLabel]
 
         return recTotal, recArr
 
@@ -46,7 +46,7 @@ class ClusterEvaluator:
         F = np.zeros(len(precArr))
         for i in range(len(precArr)):
             F[i] = (2 * precArr[i] * recArr[i]) / (precArr[i] + recArr[i])
-        return np.sum(F) / len(F)
+        return np.sum(F) / len(F) , F
 
     def getConditionalEntropy(self, target, predict):
         uniquePred, countClust = np.unique(predict, return_counts=True)
@@ -54,27 +54,19 @@ class ClusterEvaluator:
         for clusterLabel in uniquePred:
             idx = np.where(predict == clusterLabel)[0]
             trueClasses = target[idx]
-            print(trueClasses)
             classIn, classInCount = np.unique(trueClasses, return_counts=True)
             hTCi = 0
-            print(classIn)
-            print(classInCount)
             for i in range(len(classIn)):
                 countR = classInCount[i]
-                print(countR)
                 val = countR / countClust[clusterLabel]
-                print(countClust[clusterLabel])
                 hTCi += val * np.log10(val)
-            print(hTCi)
             hTCi = hTCi * (-1)
             hTC[clusterLabel] = hTCi
-            print(hTC)
             totalsize = len(predict)
             hTCTotal = 0
             for i in range(len(uniquePred)):
                 hTCTotal = hTCTotal + (countClust[i] / totalsize) * hTC[i]
-                print(hTCTotal)
-            return hTCTotal
+            return hTCTotal, hTC
 
 if __name__ == '__main__':
     ce = ClusterEvaluator()
@@ -83,5 +75,5 @@ if __name__ == '__main__':
 
     print(">>>", ce.getPrecision(true_labels, cluster_labels)[0])
     print(">>>", ce.getRecall(true_labels, cluster_labels)[0])
-    print(">>>", ce.getF1Score(true_labels, cluster_labels))
-    print(">>>", ce.getConditionalEntropy(true_labels, cluster_labels))
+    print(">>>", ce.getF1Score(true_labels, cluster_labels)[0])
+    print(">>>", ce.getConditionalEntropy(true_labels, cluster_labels)[0])
