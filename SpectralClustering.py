@@ -53,8 +53,6 @@ class SpectralClustering:
     def recalcEigns(self):
         Delta = self.calculate_delta(self.A)
         Delta_inv = np.linalg.inv(Delta)
-        print("A")
-        print(self.A.shape)
         B = np.identity(self.A.shape[0]) - Delta_inv @ self.A
         vl, vc = np.linalg.eig(B)
         eig_vals, eig_vecs = self.sortEign(vl, vc)
@@ -91,9 +89,6 @@ class SpectralClustering:
 
     def aux_kmeans(self, k):
         kmeans = KMeans(n_clusters=k)
-        print("Y")
-        print(self.Y.shape)
-        print(self.Y)
         kmeans.fit(self.Y)
         labels = kmeans.labels_
 
@@ -105,18 +100,31 @@ class SpectralClustering:
         print(predict)
         print(self.labels)
         ce = ClusterEvaluation.ClusterEvaluator()
-        print("prec")
+        print("Precision:")
         val1, arr1 = ce.getPrecision(self.labels,predict)
         print(val1)
-        print(arr1)
+        # print(arr1)
 
-        print("rec")
+        print("Recall (ours)")
         val1, arr1 = ce.getRecall(self.labels,predict)
         print(val1)
-        print(arr1)
+        # print(arr1)
 
-        val1 = ce.getF1Score(self.labels, predict)
+        print("Recall (Fowlkes-Mallows):")
+        val1 = ce.getOverallRecall(self.labels,predict)
         print(val1)
+
+
+        print("F1 score:")
+        val1, arr1 = ce.getF1Score(self.labels, predict)
+        print(val1)
+
+        print("Conditional Entropy:")
+        val1 , arr = ce.getConditionalEntropy(self.labels,predict)
+        print(val1)
+
+        print("Conditional Entropy for each class: ")
+        print(arr)
 
 
 if __name__ == '__main__':
@@ -127,5 +135,4 @@ if __name__ == '__main__':
     data, labels, test, testlabels = r.readData()
     X_train, X_labels, y_train, y_test = train_test_split(data, labels, train_size=0.0015, random_state=42)
     spc = SpectralClustering()
-    print(X_train.shape)
     spc.fit(X_train, y_train).affinity('rbf', 0.1).cluster(k=11)
