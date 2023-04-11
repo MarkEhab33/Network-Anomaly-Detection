@@ -78,7 +78,7 @@ if __name__ == '__main__':
         print("             Precision for each cluster results: ", evaluator.getPrecision(targetLabels, clusterLabels)[1])
         print("         -------------------------------------------------------------------------------------------------")
         print("         Recall total result (ours): ", evaluator.getRecall(targetLabels, clusterLabels)[0])
-        print("         Recall total result (Fowlkes-Mallows): ", evaluator.getRecall(targetLabels, clusterLabels)[0])
+        print("         Recall total result (Fowlkes-Mallows): ", evaluator.getOverallRecall(targetLabels, clusterLabels))
         print("             Recall for each cluster results: ", evaluator.getRecall(targetLabels, clusterLabels)[1])
         print("         -------------------------------------------------------------------------------------------------")
         print("         F1 score total result ",evaluator.getF1Score(targetLabels,clusterLabels)[0])

@@ -128,7 +128,6 @@ class ClusterEvaluator:
                 hTCi += val * np.log10(val)
             # negate the summation
             hTCi = hTCi * (-1)
-            print(hTCi)
             hTC[clusterLabel] = hTCi
         totalsize = len(predict)
         hTCTotal = 0
