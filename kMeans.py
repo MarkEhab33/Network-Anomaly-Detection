@@ -1,26 +1,22 @@
-import random
 import numpy as np
 import DataReader
 import time
-
-
-def euclidean_distance(a, b):
-    return np.linalg.norm(a - b)
-
+from scipy.spatial.distance import cdist
+from sklearn.cluster import KMeans
+from sklearn.metrics import accuracy_score
 
 def initialize_centroids(data, k):
+    np.random.seed(42)
     indices = np.random.choice(data.shape[0], k, replace=False)
     return data[indices]
-
 
 def assign_clusters(data, centroids):
     print('assignnnnnnn')
     clusters = [[] for _ in range(centroids.shape[0])]
     for i, point in enumerate(data):
-        centroid_idx = np.argmin([euclidean_distance(point, centroid) for centroid in centroids])
+        centroid_idx = np.argmin(cdist([point], centroids))
         clusters[centroid_idx].append(i)
     return clusters
-
 
 def update_centroids(data, clusters):
     print('Updaaaaaaate')
@@ -31,17 +27,26 @@ def update_centroids(data, clusters):
             centroids[i] = centroid
     return centroids
 
-
 def predict_clusters(data, centroids):
     print('predict')
     clusters = []
     for i, point in enumerate(data):
-        centroid_idx = np.argmin([euclidean_distance(point, centroid) for centroid in centroids])
+        centroid_idx = np.argmin(cdist([point], centroids))
         clusters.append(centroid_idx)
     return clusters
 
+def predict_nearest_centroids(data, centroids):
+    nearest_centroids = []
+    for point in data:
+        centroid_idx = np.argmin(cdist([point], centroids))
+        nearest_centroids.append(centroid_idx)
+    return nearest_centroids
 
-def k_means(data, k, max_iterations=100, tolerance=1e-4):
+def evaluate(test_data, centroids):
+    labels = np.argmin(cdist(test_data, centroids), axis=1)
+    return labels
+
+def k_means(data, k, max_iterations=100, tolerance=1e-2):
     centroids = initialize_centroids(data, k)
     prev_centroids = centroids.copy()
 
@@ -58,15 +63,11 @@ def k_means(data, k, max_iterations=100, tolerance=1e-4):
 
     return centroids, clusters
 
-
-
-
-
 if __name__ == '__main__':
-
-    r = DataReader.Reader()
-    trainData , testData = r.readData()
-
+    testPath = "corrected"
+    trainPath = "kddcup.data_10_percent_corrected"
+    r = DataReader.Reader(trainPath,testPath)
+    trainData, trainLabels, testData, testLabels = r.readData()
 
     k_values = [7, 15, 23, 31, 45]
 
@@ -78,6 +79,7 @@ if __name__ == '__main__':
 
         print(f"KMeans with K={k} finished. Centroids:")
         print(centroids)
-        test_clusters = predict_clusters(testData, centroids)
-        print("Test clusters:")
-        print(test_clusters)
+
+        test_nearest_centroids = evaluate(testData,centroids)
+        test_accuracy = np.mean(test_nearest_centroids == testLabels) * 100
+        print(f"Test accuracy with K={k}: {test_accuracy:.2f}%")
