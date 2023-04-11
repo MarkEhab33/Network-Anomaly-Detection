@@ -41,19 +41,20 @@ class SpectralClustering:
         np.save(nameVec, vecs)
 
     def getEigenValsAndVecs(self):
-        nameVec = 'normcut-' + str(self.affinityStr) + 'vecs' + '.npy'
-        nameVal = 'normcut-' + str(self.affinityStr) + 'vals' + '.npy'
-        try:
-            vecs = np.load(nameVec)
-            vals = np.load(nameVal)
-            return vals, vecs
-        except FileNotFoundError:
-            return self.recalcEigns()
+    #     nameVec = 'normcut-' + str(self.affinityStr) + 'vecs' + '.npy'
+    #     nameVal = 'normcut-' + str(self.affinityStr) + 'vals' + '.npy'
+    #     try:
+    #         vecs = np.load(nameVec)
+    #         vals = np.load(nameVal)
+    #         return vals, vecs
+    #     except FileNotFoundError:
+    #         return self.recalcEigns()
+        return self.recalcEigns()
 
     def recalcEigns(self):
         Delta = self.calculate_delta(self.A)
         Delta_inv = np.linalg.inv(Delta)
-        B = np.identity(self.A.shape[0]) - Delta_inv @ self.A
+        B = np.identity(self.A.shape[0]) - Delta_inv @ self.A #
         vl, vc = np.linalg.eig(B)
         eig_vals, eig_vecs = self.sortEign(vl, vc)
         self.saveEigs(eig_vals, eig_vecs)
@@ -97,34 +98,7 @@ class SpectralClustering:
     def cluster(self, k):
         self.k_way_normalized_cut(k)
         predict = self.aux_kmeans(k)
-        print(predict)
-        print(self.labels)
-        ce = ClusterEvaluation.ClusterEvaluator()
-        print("Precision:")
-        val1, arr1 = ce.getPrecision(self.labels,predict)
-        print(val1)
-        # print(arr1)
-
-        print("Recall (ours)")
-        val1, arr1 = ce.getRecall(self.labels,predict)
-        print(val1)
-        # print(arr1)
-
-        print("Recall (Fowlkes-Mallows):")
-        val1 = ce.getOverallRecall(self.labels,predict)
-        print(val1)
-
-
-        print("F1 score:")
-        val1, arr1 = ce.getF1Score(self.labels, predict)
-        print(val1)
-
-        print("Conditional Entropy:")
-        val1 , arr = ce.getConditionalEntropy(self.labels,predict)
-        print(val1)
-
-        print("Conditional Entropy for each class: ")
-        print(arr)
+        return predict
 
 
 if __name__ == '__main__':
@@ -135,4 +109,36 @@ if __name__ == '__main__':
     data, labels, test, testlabels = r.readData()
     X_train, X_labels, y_train, y_test = train_test_split(data, labels, train_size=0.0015, random_state=42)
     spc = SpectralClustering()
-    spc.fit(X_train, y_train).affinity('rbf', 0.1).cluster(k=11)
+    predict = spc.fit(X_train, y_train).affinity('rbf', 0.1).cluster(k=11)
+
+    print(" ==== SPECTRAL CLUSTERING RESULTS ==== ")
+    labels= y_train
+    ce = ClusterEvaluation.ClusterEvaluator()
+    print("Precision overall value:")
+    val1, arr1 = ce.getPrecision(labels, predict)
+    print(val1)
+    print("Precision for each cluster:")
+    print(arr1)
+    print("--------------------------------")
+    print("Recall overall value (ours):")
+    val1, arr1 = ce.getRecall(labels, predict)
+    print(val1)
+    print("Recall (Fowlkes-Mallows):")
+    print(ce.getOverallRecall(labels, predict))
+    print("Recall for each cluster: ")
+    print(arr1)
+    print("--------------------------------")
+
+    print("F1 overall score:")
+    val1, arr1 = ce.getF1Score(labels, predict)
+    print(val1)
+    print("--------------------------------")
+
+    print("Conditional Entropy overall:")
+    val1, arr = ce.getConditionalEntropy(labels, predict)
+    print(val1)
+
+    print("Conditional Entropy for each cluster: ")
+    print(arr)
+
+    print("--------------------------------")

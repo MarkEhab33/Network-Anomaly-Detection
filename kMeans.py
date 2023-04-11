@@ -11,7 +11,6 @@ def initialize_centroids(data, k):
     return data[indices]
 
 def assign_clusters(data, centroids):
-    print('assignnnnnnn')
     clusters = [[] for _ in range(centroids.shape[0])]
     for i, point in enumerate(data):
         centroid_idx = np.argmin(cdist([point], centroids))
@@ -19,7 +18,6 @@ def assign_clusters(data, centroids):
     return clusters
 
 def update_centroids(data, clusters):
-    print('Updaaaaaaate')
     centroids = np.zeros((len(clusters), data.shape[1]))
     for i, cluster in enumerate(clusters):
         if len(cluster) > 0:
@@ -28,7 +26,6 @@ def update_centroids(data, clusters):
     return centroids
 
 def predict_clusters(data, centroids):
-    print('predict')
     clusters = []
     for i, point in enumerate(data):
         centroid_idx = np.argmin(cdist([point], centroids))
