@@ -1,9 +1,11 @@
 import numpy as np
+from sklearn.metrics import precision_score, recall_score, f1_score
+from sklearn.preprocessing import MinMaxScaler
+
+import ClusterEvaluation
 import DataReader
 import time
 from scipy.spatial.distance import cdist
-from sklearn.cluster import KMeans
-from sklearn.metrics import accuracy_score
 
 def initialize_centroids(data, k):
     np.random.seed(42)
@@ -25,30 +27,18 @@ def update_centroids(data, clusters):
             centroids[i] = centroid
     return centroids
 
-def predict_clusters(data, centroids):
-    clusters = []
-    for i, point in enumerate(data):
-        centroid_idx = np.argmin(cdist([point], centroids))
-        clusters.append(centroid_idx)
-    return clusters
 
-def predict_nearest_centroids(data, centroids):
-    nearest_centroids = []
-    for point in data:
-        centroid_idx = np.argmin(cdist([point], centroids))
-        nearest_centroids.append(centroid_idx)
-    return nearest_centroids
 
 def evaluate(test_data, centroids):
     labels = np.argmin(cdist(test_data, centroids), axis=1)
     return labels
 
-def k_means(data, k, max_iterations=100, tolerance=1e-2):
+def k_means(data, k, max_iterations=100, tolerance=1e-4):
     centroids = initialize_centroids(data, k)
     prev_centroids = centroids.copy()
 
     for i in range(max_iterations):
-        print(i)
+
         clusters = assign_clusters(data, centroids)
         centroids = update_centroids(data, clusters)
         centroid_shift = np.sum(np.abs(centroids - prev_centroids))
@@ -65,18 +55,61 @@ if __name__ == '__main__':
     trainPath = "kddcup.data_10_percent_corrected"
     r = DataReader.Reader(trainPath,testPath)
     trainData, trainLabels, testData, testLabels = r.readData()
+    scaler = MinMaxScaler()
+    trainData = scaler.fit_transform(trainData)
+    testData = scaler.transform(testData)
 
-    k_values = [7, 15, 23, 31, 45]
+    k_values = [7,15,23,31,45]
 
     for k in k_values:
         start = time.time()
         centroids, clusters = k_means(trainData, k)
         end = time.time()
+        print(f"KMeans with K={k} finished.")
         print("     Training Time = ", (end - start) / 60, " mins")
-
-        print(f"KMeans with K={k} finished. Centroids:")
-        print(centroids)
-
         test_nearest_centroids = evaluate(testData,centroids)
-        test_accuracy = np.mean(test_nearest_centroids == testLabels) * 100
-        print(f"Test accuracy with K={k}: {test_accuracy:.2f}%")
+       
+
+        # precision = precision_score(test_nearest_centroids, testLabels, average='macro')
+        # recall = recall_score(test_nearest_centroids, testLabels, average='macro')
+        # f1 = f1_score(test_nearest_centroids, testLabels, average='macro')
+        #
+        #
+        # # Print the results
+        #
+        # print("Precision: ", precision)
+        # print("Recall: ", recall)
+        # print("F1 score: ", f1)
+
+        ce = ClusterEvaluation.ClusterEvaluator()
+
+
+        print("Precision overall value:")
+        val1, arr1 = ce.getPrecision(testLabels, test_nearest_centroids)
+        print(val1)
+        # print("Precision for each cluster:")
+        # print(arr1)
+        print("--------------------------------")
+        print("Recall overall value (ours):")
+        val1, arr1 = ce.getRecall(testLabels, test_nearest_centroids)
+        print(val1)
+        # print("Recall (Fowlkes-Mallows):")
+        # print(ce.getOverallRecall(testLabels, test_nearest_centroids))
+        # print("Recall for each cluster: ")
+        # print(arr1)
+        print("--------------------------------")
+
+        print("F1 overall score:")
+        val1, arr1 = ce.getF1Score(testLabels, test_nearest_centroids)
+        print(val1)
+        print("--------------------------------")
+
+        print("Conditional Entropy overall:")
+        val1, arr = ce.getConditionalEntropy(testLabels, test_nearest_centroids)
+        print(val1)
+
+        # print("Conditional Entropy for each cluster: ")
+        # print(arr)
+
+        print("--------------------------------")
+
