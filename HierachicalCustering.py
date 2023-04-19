@@ -25,7 +25,7 @@ class hierarchicalClustering:
     def hierarchical_clustering(self,X, n_clusters):
         D = self.distance_matrix(X)             # calculate the distance matrix
         cluster_assignments = np.arange(X.shape[0])
-        cluster_distances = np.zeros(X.shape[0])
+        #cluster_distances = np.zeros(X.shape[0])
 
         for k in range(X.shape[0] - n_clusters):                    # merge clusters until the desired number of clusters is reached
             i, j = np.unravel_index(np.argmin(D), D.shape)          # closest different pairs
@@ -34,7 +34,7 @@ class hierarchicalClustering:
                 i, j = np.unravel_index(np.argmin(D), D.shape)
 
             cluster_assignments[cluster_assignments == j] = i
-            cluster_distances[i] = D[i, j] / 2
+            #cluster_distances[i] = D[i, j] / 2
 
             for l in range(X.shape[0]):         # update the distance matrix
                 if l != i and l != j:
